@@ -20,11 +20,13 @@ import {
   propagation,
   Span,
   SpanOptions,
+  TimeInput,
 } from '@opentelemetry/api';
 import {
   BasePlugin,
   otperformance,
   TRACE_PARENT_HEADER,
+  timeInputToHrTime,
 } from '@opentelemetry/core';
 import {
   addSpanNetworkEvent,
@@ -37,6 +39,11 @@ import {
 import { AttributeNames } from './enums/AttributeNames';
 import { VERSION } from './version';
 
+export interface DocumentLoadConfig extends PluginConfig {
+  documentFetchSpanId?: string;
+  getRootSpan?: (startTime: TimeInput) => Span;
+}
+
 /**
  * This class represents a document load plugin
  */
@@ -44,13 +51,13 @@ export class DocumentLoad extends BasePlugin<unknown> {
   readonly component: string = 'document-load';
   readonly version: string = '1';
   moduleName = this.component;
-  protected _config!: PluginConfig;
+  protected _config!: DocumentLoadConfig;
 
   /**
    *
    * @param config
    */
-  constructor(config: PluginConfig = {}) {
+  constructor(config: DocumentLoadConfig = {}) {
     super('@opentelemetry/plugin-document-load', VERSION);
     this._onDocumentLoaded = this._onDocumentLoaded.bind(this);
     this._config = config;
@@ -108,11 +115,22 @@ export class DocumentLoad extends BasePlugin<unknown> {
     const entries = this._getEntries();
     const traceparent = (metaElement && metaElement.content) || '';
     context.with(propagation.extract({ traceparent }), () => {
-      const rootSpan = this._startSpan(
-        AttributeNames.DOCUMENT_LOAD,
-        PTN.FETCH_START,
-        entries
-      );
+      const fetchStart = entries[PTN.FETCH_START]
+      let rootSpan
+      if (this._config.getRootSpan) {
+        if (fetchStart) {
+          rootSpan = this._config.getRootSpan(timeInputToHrTime(fetchStart));
+          if (rootSpan) {
+            addSpanNetworkEvent(rootSpan, PTN.FETCH_START, entries)
+          }
+        }
+      } else {
+        rootSpan = this._startSpan(
+            AttributeNames.DOCUMENT_LOAD,
+            PTN.FETCH_START,
+            entries,
+          );
+        }
       if (!rootSpan) {
         return;
       }
@@ -120,7 +138,10 @@ export class DocumentLoad extends BasePlugin<unknown> {
         const fetchSpan = this._startSpan(
           AttributeNames.DOCUMENT_FETCH,
           PTN.FETCH_START,
-          entries
+          entries,
+          {
+            spanId: this._config.documentFetchSpanId ? this._config.documentFetchSpanId : undefined,
+          },
         );
         if (fetchSpan) {
           this._tracer.withSpan(fetchSpan, () => {
