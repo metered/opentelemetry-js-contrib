@@ -32,6 +32,7 @@ import {
   PerformanceEntries,
   PerformanceLegacy,
   PerformanceTimingNames as PTN,
+  parseUrl,
 } from '@opentelemetry/web';
 import { AttributeNames } from './enums/AttributeNames';
 import { VERSION } from './version';
@@ -217,11 +218,21 @@ export class DocumentLoad extends BasePlugin<unknown> {
     resource: PerformanceResourceTiming,
     spanOptions: SpanOptions = {}
   ) {
+    const url = resource.name
+    const parsedUrl = parseUrl(url)
     const span = this._startSpan(
-      resource.name,
+      "http.request:GET",
       PTN.FETCH_START,
       resource,
-      spanOptions
+      {
+        ...spanOptions,
+        attributes: {
+          ...(spanOptions.attributes || {}),
+          [AttributeNames.HTTP_METHOD]: "GET",
+          [AttributeNames.HTTP_HOST]: parsedUrl?.host,
+          [AttributeNames.HTTP_URL]: url,
+        }
+      }
     );
     if (span) {
       this._addSpanNetworkEvents(span, resource);

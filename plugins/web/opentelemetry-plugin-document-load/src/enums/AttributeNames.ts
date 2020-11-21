@@ -18,4 +18,16 @@ export enum AttributeNames {
   COMPONENT = 'component',
   DOCUMENT_LOAD = 'documentLoad',
   DOCUMENT_FETCH = 'documentFetch',
+
+  HTTP_HOST = 'http.host',
+  HTTP_FLAVOR = 'http.flavor',
+  HTTP_METHOD = 'http.method',
+  HTTP_SCHEME = 'http.scheme',
+  HTTP_STATUS_CODE = 'http.status_code',
+  HTTP_STATUS_TEXT = 'http.status_text',
+  HTTP_URL = 'http.url',
+  HTTP_TARGET = 'http.target',
+  HTTP_USER_AGENT = 'http.user_agent',
+  HTTP_RESPONSE_CONTENT_LENGTH = 'http.response_content_length',
+
 }

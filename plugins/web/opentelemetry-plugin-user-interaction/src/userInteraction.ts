@@ -341,8 +341,8 @@ export class UserInteractionPlugin extends BasePlugin<unknown> {
    */
   _updateInteractionName(url: string) {
     const span: api.Span | undefined = this._tracer.getCurrentSpan();
-    if (span && typeof span.updateName === 'function') {
-      span.updateName(`${EVENT_NAVIGATION_NAME} ${url}`);
+    if (span && typeof span.setAttribute === 'function') {
+      span.setAttribute('navigation', url)
     }
   }
 
