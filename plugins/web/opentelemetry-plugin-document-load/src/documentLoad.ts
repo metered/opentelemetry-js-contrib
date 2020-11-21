@@ -101,7 +101,7 @@ export class DocumentLoad extends BasePlugin<unknown> {
    * Collects information about performance and creates appropriate spans
    */
   private _collectPerformance() {
-    const metaElement = [...document.getElementsByTagName('meta')].find(
+    const metaElement = Array.from(document.getElementsByTagName('meta')).find(
       e => e.getAttribute('name') === TRACE_PARENT_HEADER
     );
 
@@ -175,7 +175,7 @@ export class DocumentLoad extends BasePlugin<unknown> {
    * gets performance entries of navigation
    */
   private _getEntries() {
-    const entries: PerformanceEntries = {};
+    const entries: any = {};
     const performanceNavigationTiming = (otperformance.getEntriesByType(
       'navigation'
     )[0] as unknown) as PerformanceEntries;
@@ -206,7 +206,7 @@ export class DocumentLoad extends BasePlugin<unknown> {
         });
       }
     }
-    return entries;
+    return entries as PerformanceEntries;
   }
 
   /**
