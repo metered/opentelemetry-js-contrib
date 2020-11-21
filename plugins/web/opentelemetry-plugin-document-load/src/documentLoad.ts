@@ -15,13 +15,15 @@
  */
 
 import {
-  context,
   PluginConfig,
-  propagation,
   Span,
   SpanOptions,
   TimeInput,
 } from '@opentelemetry/api';
+import {
+  context,
+  propagation,
+} from '@opentelemetry/api-global';
 import {
   BasePlugin,
   otperformance,
